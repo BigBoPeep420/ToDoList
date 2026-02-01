@@ -1,0 +1,20 @@
+Project Category
+Props:
+title--
+desc--
+projects[]
+
+Project Object
+Props:
+title--
+desc--
+todos[]
+
+ToDo Object --
+Props:
+title--
+desc--
+dueDate--
+priority--
+complete--
+notes--
