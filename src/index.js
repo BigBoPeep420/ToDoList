@@ -2,18 +2,18 @@ import {
   createTODO,
   createProject,
   createWorkspace,
+  webStorageInterfaceL,
 } from "./modules/toDo/toDo.js";
+import "./styles/main.css";
+import "./styles/layout.css";
+import { appTitle } from "./components/appTitle/appTitle.js";
+import { navBar } from "@/components/navBar/navBar.js";
 
-const space = createWorkspace({
-  title: "Default Space",
-  desc: "The default space for projects",
-});
-console.log(space);
+const elems = {
+  header: document.getElementById("header"),
+  content: document.getElementById("content"),
+  footer: document.getElementById("footer"),
+};
 
-space.addProject(
-  createProject({
-    title: "My First Project",
-    desc: `The first project I'm creating in my new app.`,
-  }),
-);
-console.log(space.projects);
+elems.header.append(appTitle("Donezo"));
+document.body.appendChild(navBar());

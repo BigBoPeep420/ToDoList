@@ -1,0 +1,17 @@
+.navButton {
+  background-color: var(--clrSec1);
+
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  gap: 0.5em;
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5em;
+
+  svg {
+    width: 1.5em;
+    height: 1.5em;
+  }
+}

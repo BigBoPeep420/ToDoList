@@ -8,6 +8,11 @@ export default {
     path: path.resolve(import.meta.dirname, "dist"),
     clean: true,
   },
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "src/"),
+    },
+  },
   plugins: [
     //Creates index.html and injects tags
     new HtmlWebpackPlugin({
@@ -26,11 +31,11 @@ export default {
       },
       {
         test: /\.(png|jpg|jpeg|gif|webp)$/i,
-        use: "asset/resource",
+        type: "asset/resource",
       },
       {
         test: /\.svg$/i,
-        use: "asset/source",
+        type: "asset/source",
       },
     ],
   },

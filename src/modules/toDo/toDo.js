@@ -92,7 +92,7 @@ function createProject(data = {}) {
     {
       type: "project",
       id: data.id ?? Date.now(),
-      todos: data.todos ?? [],
+      todos: (data.todos || []).map((todoData) => createTODO(todoData)),
       created: data.created ?? new Date(),
     },
     hasBasicInfo(data.title, data.desc),
@@ -141,7 +141,17 @@ function createProject(data = {}) {
       console.error(`Couldn't find ToDo with [ID: ${todoID}:${typeof todoID}]`);
   };
 
-  project.toJSON = function () {};
+  project.toJSON = function () {
+    return {
+      type: this.type,
+      id: this.id,
+      created: this.created,
+      title: this.getTitle(),
+      desc: this.desc,
+      note: this.getNotes(),
+      todos: this.todos,
+    };
+  };
 
   return project;
 }
@@ -151,7 +161,9 @@ function createWorkspace(data = {}) {
     {
       type: "workspace",
       id: data.id ?? Date.now(),
-      projects: data.projects ?? [],
+      projects: (data.projects || []).map((projData) =>
+        createProject(projData),
+      ),
     },
     hasBasicInfo(data.title, data.desc),
   );
@@ -182,8 +194,9 @@ function createWorkspace(data = {}) {
 
   workspace.toJSON = function () {
     return {
+      type: this.type,
       id: this.id,
-      title: this.title,
+      title: this.getTitle(),
       desc: this.desc,
       projects: this.projects,
     };
@@ -192,4 +205,61 @@ function createWorkspace(data = {}) {
   return workspace;
 }
 
-export { createTODO, createProject, createWorkspace };
+function webStorageInterfaceL() {
+  const store = window.localStorage;
+  const rehydrateMap = {
+    project: createProject,
+    workspace: createWorkspace,
+    todo: createTODO,
+  };
+
+  function storeItem(item, key = null) {
+    if (key == null) {
+      if (item.id != null) {
+        store.setItem(item.id, JSON.stringify(item));
+        return true;
+      } else {
+        console.error(
+          `Couldn't store [Item: ${item}:${typeof item}]. No key provided and item doesn't have an 'id' property.`,
+        );
+        return false;
+      }
+    } else {
+      store.setItem(key, item);
+      return true;
+    }
+  }
+
+  function getItem(key) {
+    const rawData = store.getItem(key);
+    if (!rawData) return null;
+
+    const data = JSON.parse(rawData);
+
+    if (Array.isArray(data)) {
+      return data.map((itemdata) => {
+        const type = itemdata.type;
+        return rehydrateMap[type] ? rehydrateMap[type](itemdata) : itemdata;
+      });
+    }
+
+    if (data && typeof data === "object" && "type" in data) {
+      const type = data.type;
+      return rehydrateMap[type] ? rehydrateMap[type](data) : data;
+    }
+
+    return data;
+  }
+
+  function removeItem(key) {
+    store.removeItem(key);
+  }
+
+  function clear() {
+    store.clear();
+  }
+
+  return { storeItem, getItem, removeItem, clear };
+}
+
+export { createTODO, createProject, createWorkspace, webStorageInterfaceL };

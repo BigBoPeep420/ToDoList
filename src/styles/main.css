@@ -1,0 +1,36 @@
+@font-face {
+  font-family: Gluten;
+  src:
+    url("@/assets/fonts/Gluten.woff2") format(woff2),
+    url("@/assets/fonts/Gluten.woff") format(woff);
+}
+@font-face {
+  font-family: Playwrite;
+  src:
+    url("@/assets/fonts/PlaywriteGBS.woff2") format(woff2),
+    url("@/assets/fonts/PlaywriteGBS.woff") format(woff);
+}
+
+:root {
+  --clrSec1: #074c74;
+
+  font-size: clamp(0.5em, calc(1dvw + 0.8em), 1.8em);
+  font-family: Gluten;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  box-sizing: border-box;
+  padding-inline-start: 0;
+  margin-inline-start: 0;
+  border: none;
+  color: inherit;
+  text-decoration: none;
+  font-family: Gluten;
+}
+
+body {
+  position: relative;
+}

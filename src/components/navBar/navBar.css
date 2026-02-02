@@ -1,0 +1,53 @@
+#navBar {
+  display: flex;
+  position: fixed;
+  --width: min(300px, 65dvw);
+  background-color: aqua;
+  width: var(--width);
+  height: 100dvh;
+  z-index: 1000;
+  anchor-name: --navBar;
+  left: calc(0% - var(--width));
+  transition: left 0.4s ease-out;
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    padding: 1em;
+    gap: 1em;
+
+    .navButtonGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+  }
+
+  #toggle {
+    --dim: 2rem;
+    width: var(--dim);
+    height: var(--dim);
+    position: fixed;
+    padding: 0rem 0.6rem 0 0.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position-anchor: --navBar;
+    left: anchor(right);
+    top: calc(50% - var(--dim));
+    border-radius: 0 50% 50% 0;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+#navBar:popover-open {
+  left: 0;
+}
+@starting-style {
+  #navBar:popover-open {
+    left: calc(0% - var(--width));
+  }
+}
