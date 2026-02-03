@@ -95,8 +95,8 @@ function createProject(data = {}) {
       todos: (data.todos || []).map((todoData) => createTODO(todoData)),
       created: data.created ?? new Date(),
     },
-    hasBasicInfo(data.title, data.desc),
-    hasNotes(data.notes),
+    hasBasicInfo(data.title, data.desc || ""),
+    hasNotes(data.notes || ""),
   );
 
   project.addTODO = function (todo) {
@@ -110,35 +110,29 @@ function createProject(data = {}) {
   };
 
   project.removeTODO = function (todoID) {
-    let index = null;
-    this.todos.forEach((v, i) => {
-      if (v.id == todoID) {
-        index = i;
-        return;
-      }
-    });
-    if (index != null) {
+    let index = this.todos.findIndex((todo) => todo.id == todoID);
+    if (index >= 0) {
       this.todos.splice(index, 1);
       return true;
     } else {
       console.error(
-        `Couldn't remove ToDo. No ToDo found with [ID: ${todoID}:${typeof todoID}]`,
+        `project.removeTODO: Couldn't find TODO with [todoID: ${todoID}]`,
       );
       return false;
     }
   };
 
   project.findTODOByID = function (todoID) {
-    const index = null;
-    this.todos.forEach((v, i) => {
-      if (v.id == todoID) {
-        index = i;
-        return;
-      }
-    });
-    if (index != null) return { todo: this.todos[index], index: index };
-    else
-      console.error(`Couldn't find ToDo with [ID: ${todoID}:${typeof todoID}]`);
+    const index = this.todos.findIndex((todo) => todo.id == todoID);
+    if (index >= 0) {
+      this.todos.splice(index, 1);
+      return true;
+    } else {
+      console.error(
+        `project.findTODOByID: Couldn't find ToDo with [todoID: ${todoID}]`,
+      );
+      return false;
+    }
   };
 
   project.toJSON = function () {
@@ -174,19 +168,13 @@ function createWorkspace(data = {}) {
   };
 
   workspace.removeProject = function (projectID) {
-    const index = null;
-    this.projects.forEach((v, i) => {
-      if (v.id == projectID) {
-        index = i;
-        return;
-      }
-    });
-    if (index != null) {
+    const index = this.projects.findIndex((proj) => proj.id == projectID);
+    if (index >= 0) {
       this.projects.splice(index, 1);
       return true;
     } else {
       console.error(
-        `Couldn't find project with [ID: ${projectID}:${typeof projectID}]`,
+        `workspace.removeProject: No project found with [ProjectID: ${projectID}]`,
       );
       return false;
     }
@@ -207,59 +195,181 @@ function createWorkspace(data = {}) {
 
 function webStorageInterfaceL() {
   const store = window.localStorage;
-  const rehydrateMap = {
-    project: createProject,
-    workspace: createWorkspace,
-    todo: createTODO,
-  };
 
-  function storeItem(item, key = null) {
-    if (key == null) {
-      if (item.id != null) {
-        store.setItem(item.id, JSON.stringify(item));
-        return true;
-      } else {
-        console.error(
-          `Couldn't store [Item: ${item}:${typeof item}]. No key provided and item doesn't have an 'id' property.`,
-        );
-        return false;
+  function storeWorkspace(workspaceID, workspace) {
+    store.setItem(workspaceID, JSON.stringify(workspace));
+  }
+
+  function getWorkspace(workspaceID) {
+    const rawWS = store.getItem(workspaceID);
+    if (!rawWS) return null;
+
+    const ws = JSON.parse(rawWS);
+
+    return createWorkspace(ws);
+  }
+
+  function getAllWorkspaces() {
+    const allItems = getAllItems();
+
+    return allItems.reduce((acc, item) => {
+      if (item.value.type == "workspace") {
+        acc[item.key] = createWorkspace(item.value);
+        return acc;
       }
-    } else {
-      store.setItem(key, item);
-      return true;
-    }
+    }, {});
   }
 
-  function getItem(key) {
-    const rawData = store.getItem(key);
-    if (!rawData) return null;
-
-    const data = JSON.parse(rawData);
-
-    if (Array.isArray(data)) {
-      return data.map((itemdata) => {
-        const type = itemdata.type;
-        return rehydrateMap[type] ? rehydrateMap[type](itemdata) : itemdata;
-      });
-    }
-
-    if (data && typeof data === "object" && "type" in data) {
-      const type = data.type;
-      return rehydrateMap[type] ? rehydrateMap[type](data) : data;
-    }
-
-    return data;
-  }
-
-  function removeItem(key) {
-    store.removeItem(key);
+  function removeWorkspace(workspaceID) {
+    store.removeItem(workspaceID);
   }
 
   function clear() {
     store.clear();
   }
 
-  return { storeItem, getItem, removeItem, clear };
+  function getAllItems() {
+    const items = [];
+    for (let i = 0; i < store.length; i++) {
+      const key = localStorage.key(i);
+      const value = JSON.parse(store.getItem(key));
+      items.push({ key, value });
+    }
+    return items;
+  }
+
+  return {
+    storeWorkspace,
+    getWorkspace,
+    getAllWorkspaces,
+    removeWorkspace,
+    clear,
+    getAllItems,
+  };
 }
 
-export { createTODO, createProject, createWorkspace, webStorageInterfaceL };
+function Donezo(initialCallbacks = {}) {
+  const callbacks = {
+    onupdateworkspaces: [],
+    onupdatews: [],
+  };
+  for (let event in initialCallbacks) {
+    if (event in callbacks) {
+      callbacks[event].push(...initialCallbacks[event]);
+    }
+  }
+
+  const storageInterface = webStorageInterfaceL();
+  const cache = storageInterface.getAllWorkspaces();
+  callCallbacks("onupdateworkspaces");
+
+  function registerCallback(eventName, callbackFn) {
+    if (eventName in callbacks) callbacks[eventName].push(callbackFn);
+  }
+  function removeCallback(eventName, callbackFn) {
+    if (eventName in callbacks) {
+      callbacks[eventName] = callbacks[eventName].filter(
+        (fn) => fn !== callbackFn,
+      );
+    }
+  }
+  function callCallbacks(eventName, ...args) {
+    if (eventName in callbacks) {
+      callbacks[eventName].forEach((callback) => callback(...args));
+    }
+  }
+
+  function addWorkspace(workspaceData) {
+    if ("title" in workspaceData) {
+      const newSpace = createWorkspace(workspaceData);
+      if (newSpace) {
+        cache[newSpace.id] = newSpace;
+        callCallbacks("onupdateworkspaces", { ...cache });
+        storageInterface.storeWorkspace(newSpace.id, newSpace);
+      } else console.error(`Couldn't create new Workspace`);
+    } else console.error(`No title property in workspaceData argument`);
+  }
+  function removeWorkspace(workspaceID) {
+    if (workspaceID in cache) {
+      delete cache[workspaceID];
+      callCallbacks("onupdateworkspaces", { ...cache });
+      storageInterface.removeWorkspace(workspaceID);
+    }
+  }
+  function getWorkspace(workspaceID) {
+    if (workspaceID in cache) return cache[workspaceID];
+    else {
+      const result = storageInterface.getWorkspace(workspaceID);
+      if (result != null) {
+        cache[result.id] = result;
+        callCallbacks("onupdateworkspaces", { ...cache });
+        return cache[result.id];
+      } else {
+        console.error(
+          `[WorkspaceID: ${workspaceID}] not found in cache or storage`,
+        );
+        return null;
+      }
+    }
+  }
+  function getAllWorkspaces() {
+    return { ...cache };
+  }
+
+  function addProject(workspaceID, projData) {
+    if (projData.title.length < 3) {
+      console.error("Donezo.addProject: Title must be at least 3 chars");
+      return null;
+    }
+    const ws = getWorkspace(workspaceID);
+    if (ws) {
+      const newProj = createProject(projData);
+      ws.addProject(newProj);
+      callCallbacks("onupdatews", ws);
+      storageInterface.storeWorkspace(ws.id, ws);
+      return true;
+    } else {
+      console.error(
+        `Donezo.addProject: Couldn't find [WorkspaceID: ${workspaceID}]`,
+      );
+      return null;
+    }
+  }
+  function removeProject(workspaceID, projectID) {
+    const ws = getWorkspace(workspaceID);
+    if (ws) {
+      ws.removeProject(projectID);
+      callCallbacks("onupdatews", ws);
+      return true;
+    } else {
+      console.error(
+        `Donezo.removeProject: Couldn't find Workspace with [workspaceID: ${workspaceID}]`,
+      );
+      return false;
+    }
+  }
+  function getProject(workspaceID, projectID) {
+    const ws = getWorkspace(workspaceID);
+    const index = ws.projects.findIndex((proj) => proj.id == projectID);
+    if (index >= 0) {
+      return ws.projects[index];
+    } else {
+      console.error(`Couldn't find project with [ProjectID: ${projectID}]`);
+      return false;
+    }
+  }
+
+  return {
+    registerCallback,
+    removeCallback,
+    addWorkspace,
+    removeWorkspace,
+    getWorkspace,
+    getAllWorkspaces,
+    addProject,
+    removeProject,
+    getProject,
+  };
+}
+
+export { Donezo };

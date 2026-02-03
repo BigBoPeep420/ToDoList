@@ -13,7 +13,9 @@
   .inner {
     display: flex;
     flex-direction: column;
-    padding: 1em;
+    width: 100%;
+    height: 100%;
+    padding: 0.5em;
     gap: 1em;
 
     .navButtonGroup {
@@ -42,10 +44,32 @@
       height: 100%;
     }
   }
+
+  .navLinkGroup {
+    background-color: antiquewhite;
+    width: 100%;
+
+    .inner {
+      gap: 0.5em;
+      padding: 0.5em;
+    }
+    .navLink {
+      display: flex;
+      align-items: center;
+
+      svg {
+        width: 2em;
+        height: 2em;
+        margin-right: 0.5em;
+      }
+    }
+  }
 }
+
 #navBar:popover-open {
   left: 0;
 }
+
 @starting-style {
   #navBar:popover-open {
     left: calc(0% - var(--width));

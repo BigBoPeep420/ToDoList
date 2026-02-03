@@ -1,0 +1,87 @@
+.workspaceManager {
+  --colorBG: #0000002a;
+  background-color: var(--colorBG);
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  font-size: calc(var(--fontSize1) * 0.5);
+  padding: 0.5em;
+  user-select: none;
+  .workspaceRow {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    .workspaceHeader {
+      background-color: rgb(from var(--colorBG) r g b / 0.2);
+      width: 100%;
+      display: -webkit-flex;
+      align-items: center;
+      text-align: center;
+      column-gap: 0.2em;
+      padding: 0.4em;
+      border-radius: 0.4em;
+      transition: background-color 0.3s ease-out;
+
+      .workspaceDelete,
+      .workspaceEdit {
+        width: 1.5em;
+        height: 1.5em;
+        flex-shrink: 0;
+        border-radius: 50%;
+      }
+
+      .workspaceDelete:hover,
+      .workspaceEdit:hover {
+        scale: 1.1;
+      }
+
+      p {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        margin: auto;
+        font-size: calc(var(--fontSize1) * 0.5);
+      }
+    }
+
+    .workspaceHeader:hover {
+      background-color: rgb(from var(--colorBG) r g b / 0.3);
+    }
+
+    .workspaceHeader::before {
+      content: "▷";
+      display: inline-block;
+      margin-right: 0.3em;
+      transition: rotate 0.3s ease-out;
+    }
+
+    .projectList {
+      background-color: #0000001a;
+      padding: 0.5em;
+      border-radius: 0 0 0.4em 0.4em;
+      .projectItem {
+        font-size: calc(var(--fontSize1) * 0.6);
+        padding: 0.4em;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+    }
+  }
+
+  .workspaceRow[open] {
+    .workspaceHeader {
+      border-radius: 0.4em 0.4em 0 0;
+    }
+    .workspaceHeader::before {
+      rotate: 90deg;
+    }
+  }
+}

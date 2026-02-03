@@ -1,45 +1,25 @@
-import { navButton } from "../navButton/navButton.js";
 import { emmet } from "emmet-elem";
 import { stringToElement } from "@/modules/utils/domParse.js";
 import "./navBar.css";
+import { navLinkGroup } from "@/components/navBar/navLinkGroup.js";
+import { workspaceManager } from "@/components/workspaceManager/workspaceManager.js";
 import iconHome from "@/assets/icons/home.svg";
 import iconWorkspaces from "@/assets/icons/format-list-text.svg";
 import iconSettings from "@/assets/icons/cog-box.svg";
 import iconMenuLeft from "@/assets/icons/arrow-collapse-left.svg";
 import iconMenuRight from "@/assets/icons/arrow-collapse-right.svg";
 
-function navBar() {
-  let open = false;
+function navBar(utilities) {
   const icons = {
     open: stringToElement(iconMenuLeft, "svg"),
     closed: stringToElement(iconMenuRight, "svg"),
+    home: stringToElement(iconHome, "svg"),
+    workspaces: stringToElement(iconWorkspaces, "svg"),
+    settings: stringToElement(iconSettings, "svg"),
   };
   const outer = emmet(`nav#navBar[popover="auto"]`);
   const inner = emmet("div.inner");
   outer.append(inner);
-
-  const navGroupA = emmet("ul.navButtonGroup");
-  navGroupA.append(
-    navButton(
-      [stringToElement(iconHome, "svg"), emmet("p{Home}")],
-      "home",
-      toggleNavBar,
-    ),
-    navButton(
-      [stringToElement(iconWorkspaces, "svg"), emmet("p{Workspaces}")],
-      "workspaces",
-      toggleNavBar,
-    ),
-  );
-  const navGroupB = emmet("ul.navButtonGroup");
-  navGroupB.append(
-    navButton(
-      [stringToElement(iconSettings, "svg"), emmet("p{Settings}")],
-      "settings",
-      toggleNavBar,
-    ),
-  );
-  inner.append(navGroupA, navGroupB);
 
   const toggleBtn = emmet(`button#toggle[type="button"]`);
   toggleBtn.appendChild(icons.closed);
@@ -48,21 +28,37 @@ function navBar() {
   });
   outer.appendChild(toggleBtn);
 
+  outer.addEventListener("toggle", (e) => {
+    switch (e.newState) {
+      case "open":
+        toggleBtn.replaceChildren(icons.open);
+        break;
+      default:
+        toggleBtn.replaceChildren(icons.closed);
+        break;
+    }
+  });
+
+  inner.appendChild(
+    navLinkGroup(utilities.navigate, [
+      { content: [icons.home, emmet("span{Home}")], target: "home" },
+      {
+        content: [icons.settings, emmet("span{Settings}")],
+        target: "settings",
+      },
+    ]),
+  );
+
+  inner.appendChild(workspaceManager(utilities));
+
   return outer;
 
   function toggleNavBar(show = null) {
     if (show == "true") {
       outer.showPopover();
-      open = true;
-      toggleBtn.replaceChildren(icons.open);
-      return;
     } else if (show == "false") {
       outer.hidePopover();
-      open = false;
-      toggleBtn.replaceChildren(icons.closed);
     } else {
-      toggleBtn.replaceChildren(open ? icons.closed : icons.open);
-      open = !open;
       outer.togglePopover();
     }
   }

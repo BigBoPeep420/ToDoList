@@ -1,0 +1,11 @@
+body[data-view="projectView"] {
+  #content {
+    padding: 0;
+    .projectView {
+      height: 100%;
+      .projectManager {
+        height: 20%;
+      }
+    }
+  }
+}

@@ -13,8 +13,11 @@
 
 :root {
   --clrSec1: #074c74;
+  --clrTransBG: #00000023;
+  --fontSize1: clamp(0.8rem, calc(2dvw + 0.8em), 1.3rem);
+  --fontSize2: clamp(0.3em, calc(1dvw));
 
-  font-size: clamp(0.5em, calc(1dvw + 0.8em), 1.8em);
+  font-size: var(--fontSize1);
   font-family: Gluten;
 }
 
@@ -29,6 +32,8 @@
   color: inherit;
   text-decoration: none;
   font-family: Gluten;
+  font-size: calc(var(--fontSize1) * 0.7);
+  scrollbar-color: var(--clrTransBG) var(--clrTransBG);
 }
 
 body {

@@ -1,0 +1,19 @@
+body {
+  background-color: rgb(104, 104, 104);
+  display: grid;
+  grid-template-rows: min-content auto min-content;
+  width: 100dvw;
+  height: 100dvh;
+}
+
+#header {
+  background-color: aquamarine;
+  justify-items: center;
+  padding: 1em;
+}
+
+#content {
+  padding: 1em;
+  width: 100dvw;
+  height: 100%;
+}
